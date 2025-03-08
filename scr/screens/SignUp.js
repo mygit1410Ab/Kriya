@@ -1,0 +1,191 @@
+import {StyleSheet, Text, View} from 'react-native';
+import React, {useState} from 'react';
+import CoustomSafeView from '../components/coustomView/CoustomSafeView';
+import {strings} from '../utils/string';
+import textStyle from '../utils/fontStyles';
+import {Width} from '../utils/globalwinSize';
+import {useNavigation} from '@react-navigation/native';
+import CoustomButton from '../components/Buttons/CoustomButton';
+import BackArrowBtn from '../components/Buttons/BackArrowBtn';
+import CoustomTextInput from '../components/InputBox/CoustomTextInput';
+import CoustomPasswordBox from '../components/InputBox/CoustomPasswordBox';
+import EmailValidator from 'email-validator';
+import {endPoint} from '../services/userApi/Api';
+import Loader from '../components/loader/Loader';
+import {signUpService} from '../services/servicesCall/servicesCall';
+
+const SignUp = () => {
+  const navigation = useNavigation();
+  const [email, setEmail] = useState('');
+  const [emailErr, setEmailErr] = useState(false);
+  const [emailErrMess, setEmailErrMess] = useState('');
+  const [nameErr, setNameErr] = useState(false);
+  const [nameErrMess, setNameErrMess] = useState('');
+  const [passwordErr, setPasswordErr] = useState(false);
+  const [passwordErrMess, setpasswordErrMess] = useState('');
+  const [name, setName] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const backBtnHandler = () => {
+    navigation.goBack();
+  };
+
+  const loginHandler = () => {
+    navigation.navigate('LogIn');
+  };
+
+  const registerHandler = () => {
+    if (!name) {
+      setNameErr(true);
+      setNameErrMess('Name is required');
+      return 'Name is required';
+    }
+
+    if (!email) {
+      setEmailErr(true);
+      setEmailErrMess('Email is required');
+      return 'Email is required';
+    }
+
+    if (!EmailValidator.validate(email)) {
+      setEmailErr(true);
+      setEmailErrMess('Invalid email format');
+      return 'Invalid email format';
+    }
+
+    if (!password) {
+      setPasswordErr(true);
+      setpasswordErrMess('Password is required');
+      return 'Password is required';
+    }
+
+    if (password.length < 6) {
+      setPasswordErr(true);
+      setpasswordErrMess('Password must be at least 6 characters long');
+      return 'Password must be at least 6 characters long ';
+    }
+
+    signUpHandler();
+    return null; // No errors
+  };
+
+  const signUpHandler = async () => {
+    await signUpService({
+      endPoint: endPoint.auth.signUp,
+      data: {
+        name,
+        email,
+        password,
+      },
+      setLoading,
+      navigation,
+    });
+  };
+  const emailHandler = text => {
+    setEmail(text.trim().toLowerCase());
+  };
+  const nameHandler = text => {
+    setName(text.trim());
+  };
+  const passwordHandler = text => {
+    setPassword(text);
+  };
+
+  const nameFocusHandler = () => {
+    setNameErr(false);
+    setNameErrMess('');
+  };
+
+  const emailFocusHandler = () => {
+    setEmailErr(false);
+    setEmailErrMess('');
+  };
+  const passwordFocusHandler = () => {
+    setPasswordErr(false);
+    setpasswordErrMess('');
+  };
+
+  return (
+    <CoustomSafeView>
+      <View style={styles.mainCard}>
+        <BackArrowBtn onPress={backBtnHandler} />
+        <Text
+          style={[
+            textStyle.headerLarge,
+            {
+              fontSize: Width * 0.1,
+              marginTop: Width * 0.05,
+              left: Width * 0.01,
+            },
+          ]}>
+          {strings.signUp.header}
+        </Text>
+        <View style={styles.inputMainCard}>
+          <CoustomTextInput
+            onChangeText={nameHandler}
+            placeHolder={'Enter Your Name'}
+            lable={'Name:'}
+            onErro={nameErr}
+            errorMess={nameErrMess}
+            onFocus={nameFocusHandler}
+          />
+          <CoustomTextInput
+            onChangeText={emailHandler}
+            placeHolder={'Enter Your Email'}
+            lable={'Email:'}
+            onErro={emailErr}
+            errorMess={emailErrMess}
+            onFocus={emailFocusHandler}
+          />
+          <CoustomPasswordBox
+            onChangeText={passwordHandler}
+            placeHolder={'Enter Your Password'}
+            lable={'Password:'}
+            onErro={passwordErr}
+            errorMess={passwordErrMess}
+            onFocus={passwordFocusHandler}
+          />
+        </View>
+        <View style={styles.btnCard}>
+          <CoustomButton
+            height={40}
+            width={'90%'}
+            borderRadius={8}
+            title={'Register'}
+            backgroundColor={'#8875FF'}
+            onPress={registerHandler}
+          />
+          <Text style={textStyle.paragraph}>
+            {strings.signUp.already}
+            <Text
+              onPress={loginHandler}
+              style={[textStyle.paragraphBold, {color: '#8875FF'}]}>
+              {' LOGIN'}
+            </Text>
+          </Text>
+        </View>
+
+        {loading && <Loader visible={loading} />}
+      </View>
+    </CoustomSafeView>
+  );
+};
+
+export default SignUp;
+
+const styles = StyleSheet.create({
+  mainCard: {
+    flex: 1,
+    paddingHorizontal: '3%',
+    paddingVertical: '4%',
+  },
+  inputMainCard: {
+    gap: 10,
+  },
+  btnCard: {
+    marginTop: '30%',
+    alignItems: 'center',
+    gap: 15,
+  },
+});
