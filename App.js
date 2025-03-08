@@ -15,7 +15,6 @@ const App = () => {
         barStyle={'light-content'}
       />
       <Navigation />
-      {/* <Tasklist /> */}
     </>
   );
 };
